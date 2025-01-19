@@ -17,13 +17,17 @@
                     userInput = Convert.ToByte(Console.ReadLine());
 
                 }
-                catch(Exception ex)
+                catch (Exception )
                 {
                     Console.WriteLine("Invalid input. Please enter a number between 1 and 3.");
+                    continue;
                 }
-            } while (userInput > 3 || userInput <=0);
+            } while (userInput > 3 || userInput <= 0);
             return userInput;
         }
+
+
+         
         public static enTypeMode SelectMode(byte userInput)
         {
             enTypeMode mode = new enTypeMode();
@@ -31,15 +35,14 @@
             {
                 case 1:
                     mode = (enTypeMode)userInput;
-
                     // Console.WriteLine("You Entered The Doctor Mode");
                     break;
                 case 2:
                     mode = (enTypeMode)userInput;
                     // Console.WriteLine("You Entered The Student Mode");
                     break;
-                    case 3:
-                        mode = (enTypeMode)userInput;
+                case 3:
+                    mode = (enTypeMode)userInput;
                     break;
                 default:
                     break;
@@ -47,63 +50,88 @@
             }
             return mode;
         }
+
         static void Main(string[] args)
         {
-            // Qtype type = Questions.SelectQuestionType(Questions.ShowQuestions(SelectMode(ShowMode())));
-            enTypeMode mode;
+            StartProgram();
+        }
 
+        private static void StartProgram()
+        {
+            enTypeMode mode;
             do
             {
-                 mode = SelectMode(ShowMode());
+                mode = SelectMode(ShowMode());
+
                 if (mode is enTypeMode.Doctor)
                 {
-                    Qtype type = Questions.SelectQuestionType(Questions.ShowQuestions(mode));
-                    Console.WriteLine("How Many Questions Do you want ? :");
-                    int length = Convert.ToInt32(Console.ReadLine());
-                    if (type is Qtype.TrueOrFalse)
+                    Qtype type = Questions.SelectQuestionType(Questions.GetQuestionType());
+                    int length = HowManyQuestion();
+                    for (int i = 0; i < length; i++)
                     {
-                        Questions TFQuestions = new TrueOrFalse();
-                        TFQuestions.AddQuestion(length);
+                        if (type is Qtype.TrueOrFalse)
+                        {
+                            Questions TFQuestions = new TrueOrFalse();
+                            TFQuestions.AddQuestion(length, TFQuestions);
+                        }
+                        else if (type is Qtype.ChooseOneQuestion)
+                        {
+                            Questions ChQuestions = new ChooseOneChoice();
+                            ChQuestions.AddQuestion(length, ChQuestions);
+                        }
+                        else if (type is Qtype.MultiplecationQuestion)
+                        {
+                            Questions MCQuestions = new MultipleChoiceQuestions();
+                            MCQuestions.AddQuestion(length, MCQuestions);
+                        }
                     }
-                    else if (type is Qtype.ChooseOneQuestion)
-                    {
-                        Questions ChQuestions = new ChooseOneChoice();
-                        ChQuestions.AddQuestion(length);
-                    }else if(type is Qtype.MultiplecationQuestion)
-                    {
-                        Questions MCQuestions = new MultipleChoiceQuestions();
-                        MCQuestions.AddQuestion(length);
-                    }
-
-
                 }
-                else if(mode is enTypeMode.Student)
+                else if (mode is enTypeMode.Student)
                 {
-                    enFinalOrPractical typo = Exam.ChooseExam();
-                    if (typo is enFinalOrPractical.Practical)
+                    if (Questions.AllQuestion.Count() != 0)
                     {
-                        Practical exam = new Practical();
-                        List < Questions > randomizeQuestions = exam.GenerateRandomNumber(Questions.AllQuestion, 4);
-                        Console.WriteLine(exam.DeterminePassOrFailed(exam.CalculateTotalMarks(exam.ShowQuestionExam(randomizeQuestions), randomizeQuestions), randomizeQuestions));
+                        enFinalOrPractical typo = Exam.ChooseExam();
+                        if (typo is enFinalOrPractical.Practical)
+                        {
+                            Exam exam = new Practical();
+                            List<Questions> randomizeQuestions = exam.GenerateRandomNumber(Questions.AllQuestion);
+                            double studentMarks = exam.CalculateTotalMarks(exam.ShowQuestionExam(randomizeQuestions), randomizeQuestions);
+                            double totalMarks = exam.GetTotalMarkForEachQuestion(randomizeQuestions);
+                            exam.ShowModelAnswer(studentMarks, totalMarks);
+                            //exam.DeterminePassOrFailed(exam.CalculateTotalMarks(exam.ShowQuestionExam(randomizeQuestions), randomizeQuestions), randomizeQuestions);
+                        }
+                        else if (typo is enFinalOrPractical.Final)
+                        {
+                            Exam exam = new Final();
+                            List<Questions> randomizeQuestions = exam.GenerateRandomNumber(Questions.AllQuestion);
+                            double studentMarks = exam.CalculateTotalMarks(exam.ShowQuestionExam(randomizeQuestions), randomizeQuestions);
+                            double totalMarks = exam.GetTotalMarkForEachQuestion(randomizeQuestions);
+                            exam.ShowModelAnswer(studentMarks, totalMarks);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No Exams havenot been added yet");
                     }
                 }
             } while (mode != enTypeMode.Exit);
-  
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        private static int HowManyQuestion()
+        {
+            while (true)
+            {
+                try
+                {
+                    Console.WriteLine("How Many Questions Do you want ? :");
+                    int length = Convert.ToInt32(Console.ReadLine());
+                    return length;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
         }
     }
 }
